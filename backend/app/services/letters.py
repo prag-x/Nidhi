@@ -15,6 +15,7 @@ from pathlib import Path
 from sqlalchemy.orm import Session
 
 from ..config import get_settings
+from . import vault
 from ..db import local_date, utcnow
 from ..enums import DiscrepancyStatus, EventType, LetterKind
 from ..models import Instrument, Letter, User
@@ -169,7 +170,7 @@ def issue_letter(db: Session, inst: Instrument, kind: str, user: User | None, *,
     folder = Path(get_settings().upload_dir) / "letters"
     folder.mkdir(parents=True, exist_ok=True)
     stored = f"{code}.pdf"
-    (folder / stored).write_bytes(pdf)
+    vault.write(folder / stored, pdf)
     to, _ = _addressee(inst, kind)
     subject = SUBJECTS[kind].format(kind="FDR" if inst.kind == "FDR" else "security deposit", fdr=inst.fdr_number,
                                     ref=inst.ref_no)

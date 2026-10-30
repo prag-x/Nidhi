@@ -217,7 +217,7 @@ def evaluate(db: Session, inst: Instrument) -> list[Finding]:
     if is_fdr and inst.bank_id and inst.fdr_number:
         key = _norm_fdr(inst.fdr_number)
         others = db.scalars(select(Instrument).where(
-            Instrument.bank_id == inst.bank_id, Instrument.id != inst.id,
+            Instrument.bank_id == inst.bank_id, Instrument.id != inst.id, Instrument.fdr_key == key,
             Instrument.status.not_in([Status.REJECTED, Status.RELEASED]),
         )).all()
         for o in others:
