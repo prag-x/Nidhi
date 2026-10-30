@@ -1,0 +1,51 @@
+# Nidhi: PostgreSQL + API + web front end.
+#   cp .env.example .env   (set NIDHI_SECRET_KEY)
+#   docker compose up --build
+# Then open http://localhost:8080
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: nidhi
+      POSTGRES_USER: nidhi
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nidhi}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nidhi -d nidhi"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NIDHI_ENVIRONMENT: ${NIDHI_ENVIRONMENT:-production}
+      NIDHI_DATABASE_URL: postgresql+psycopg://nidhi:${POSTGRES_PASSWORD:-nidhi}@db:5432/nidhi
+      NIDHI_SECRET_KEY: ${NIDHI_SECRET_KEY:?Set NIDHI_SECRET_KEY in .env}
+      NIDHI_DEMO_MODE: ${NIDHI_DEMO_MODE:-true}
+      NIDHI_SEED_DEMO: ${NIDHI_SEED_DEMO:-true}
+      NIDHI_CORS_ORIGINS: ${NIDHI_CORS_ORIGINS:-http://localhost:8080}
+      NIDHI_TIMEZONE: Asia/Kolkata
+      NIDHI_PUBLIC_BASE_URL: ${NIDHI_PUBLIC_BASE_URL:-http://localhost:8080}
+    volumes:
+      - uploads:/data/uploads
+      - samples:/data/samples
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "${NIDHI_PORT:-8080}:80"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  uploads:
+  samples:

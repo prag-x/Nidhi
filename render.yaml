@@ -1,0 +1,14 @@
+# Render blueprint: New + > Blueprint > pick this repository. Free plan; the service sleeps when idle and wakes in
+# about a minute on the next visit.
+services:
+  - type: web
+    name: nidhi-signalnine
+    runtime: docker
+    plan: free
+    dockerfilePath: ./deploy/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      - key: NIDHI_SECRET_KEY
+        generateValue: true
