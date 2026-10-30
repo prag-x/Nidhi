@@ -2,7 +2,7 @@
 
 **Smart India Hackathon 2026 · Problem Statement 26265 · All India Council for Technical Education (AICTE) · Team SignalNine (198001)**
 
-**Live demo:** [nidhi-signalnine-hgxy.onrender.com](https://nidhi-signalnine-hgxy.onrender.com) · **Video:** [youtu.be/PU3KRvM0vZE](https://youtu.be/PU3KRvM0vZE) · **Source:** [github.com/prag-x/Nidhi](https://github.com/prag-x/Nidhi)
+**Live demo:** [nidhi-signalnine-hgxy.onrender.com](https://nidhi-signalnine-hgxy.onrender.com) · **Video:** [youtu.be/PU3KRvM0vZE](https://youtu.be/PU3KRvM0vZE)
 
 *Nidhi* (निधि) means a fund held in trust.
 
