@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import Response
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
@@ -30,7 +30,7 @@ from ..enums import (
     Status,
 )
 from ..models import Bank, Discrepancy, Document, Institution, Instrument, Letter, ReleaseRequest, User
-from ..services import bankgateway, checks, instruments as svc, release
+from ..services import bankgateway, checks, instruments as svc, release, vault
 from ..services import permissions as P
 from ..services.audit import audit
 from ..services.fdrdoc import read_fdr
@@ -253,6 +253,10 @@ class SubmitIn(BaseModel):
         return v
 
 
+def _safe_name(name: str) -> str:
+    return re.sub(r'[^A-Za-z0-9._ -]', "_", name)[:120] or "document"
+
+
 def _staged_path(token: str, ext: str | None = None) -> Path:
     """Where a document read before submission waits. Without `ext`, finds the staged file whatever its type."""
     base = Path(get_settings().upload_dir) / "staged"
@@ -268,7 +272,7 @@ def _store(db: Session, x: Instrument, data: bytes, filename: str, user: User, d
     folder.mkdir(parents=True, exist_ok=True)
     ext = Path(filename).suffix.lower()
     stored = f"{uuid.uuid4().hex}{ext}"
-    (folder / stored).write_bytes(data)
+    vault.write(folder / stored, data)
     doc = Document(instrument_id=x.id, doc_type=doc_type, filename=Path(filename).name[:255], stored_name=stored,
                    content_type=DOC_TYPES.get(ext, "application/octet-stream"), size_bytes=len(data),
                    sha256=hashlib.sha256(data).hexdigest(), uploaded_by_id=user.id)
@@ -302,8 +306,7 @@ async def read_document(file: UploadFile = File(...), user: User = Depends(get_c
     values, confidence = read_fdr(data, ext)
     token = uuid.uuid4().hex
     path = _staged_path(token, ext)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(data)
+    vault.write(path, data)
     return {"token": token, "filename": file.filename, "values": values, "confidence": confidence,
             "sha256": hashlib.sha256(data).hexdigest()}
 
@@ -340,7 +343,7 @@ def submit(body: SubmitIn, request: Request, db: Session = Depends(get_db), user
     if body.document_token:
         path = _staged_path(body.document_token)
         if path.exists():
-            data = path.read_bytes()
+            data = vault.read(path)
             _store(db, x, data, f"FDR_{x.fdr_number}{path.suffix}", user, "FDR_COPY")
             x.doc_extract, x.doc_extract_confidence = read_fdr(data, path.suffix)
             path.unlink(missing_ok=True)
@@ -410,9 +413,11 @@ def download_document(doc_id: int, request: Request, db: Session = Depends(get_d
     path = Path(get_settings().upload_dir) / doc.stored_name
     if not path.exists():
         raise HTTPException(410, "The stored file is missing")
+    data = vault.read(path)
     audit(db, user, "document_downloaded", "document", doc.id, request)
     db.commit()
-    return FileResponse(path, media_type=doc.content_type, filename=doc.filename)
+    return Response(data, media_type=doc.content_type,
+                    headers={"Content-Disposition": f'attachment; filename="{_safe_name(doc.filename)}"'})
 
 
 @files_router.get("/letters/{code}/pdf")
@@ -424,9 +429,11 @@ def download_letter(code: str, request: Request, db: Session = Depends(get_db), 
     path = letter_path(letter)
     if not path.exists():
         raise HTTPException(410, "The stored letter is missing")
+    data = vault.read(path)
     audit(db, user, "letter_downloaded", "letter", letter.code, request)
     db.commit()
-    return FileResponse(path, media_type="application/pdf", filename=f"{letter.code}.pdf")
+    return Response(data, media_type="application/pdf",
+                    headers={"Content-Disposition": f'attachment; filename="{letter.code}.pdf"'})
 
 
 @router.get("/{inst_id}/letters")
