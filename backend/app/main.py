@@ -31,6 +31,7 @@ from .config import get_settings
 from .db import SessionLocal, engine
 from .services.events import broker
 from .services.sweeps import run_sweep
+from .services.vault import VaultError
 
 settings = get_settings()
 logging.basicConfig(level=settings.log_level, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -125,6 +126,13 @@ async def bad_value(request: Request, exc: DataError):
     # PostgreSQL rejects out-of-range numbers and malformed values at the driver level.
     log.info("rejected value on %s %s: %s", request.method, request.url.path, exc.orig)
     return JSONResponse({"detail": "A value in the request is out of range or malformed."}, status_code=422)
+
+
+@app.exception_handler(VaultError)
+async def vault_error(request: Request, exc: VaultError):
+    log.error("stored file failed to decrypt on %s: %s", request.url.path, exc)
+    return JSONResponse({"detail": "The stored file failed its integrity check and was not served. It has been logged."},
+                        status_code=409)
 
 
 @app.exception_handler(Exception)

@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 
 from sqlalchemy import (
+    event,
     JSON,
     Boolean,
     Date,
@@ -227,6 +228,8 @@ class Instrument(Base):
 
     # Declared by the institution
     fdr_number: Mapped[str] = mapped_column(String(40))
+    # FDR number normalised for matching (punctuation dropped, OCR look-alikes folded); set automatically.
+    fdr_key: Mapped[str | None] = mapped_column(String(40), index=True)
     bank_id: Mapped[int | None] = mapped_column(ForeignKey("banks.id"), index=True)
     bank_name_raw: Mapped[str | None] = mapped_column(String(160))
     branch: Mapped[str | None] = mapped_column(String(120))
@@ -544,3 +547,13 @@ class AppSetting(Base):
     updated_by_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
 
 
+
+
+def _set_fdr_key(_mapper, _conn, target: Instrument) -> None:
+    from .services.checks import _norm_fdr
+
+    target.fdr_key = _norm_fdr(target.fdr_number)
+
+
+event.listen(Instrument, "before_insert", _set_fdr_key)
+event.listen(Instrument, "before_update", _set_fdr_key)

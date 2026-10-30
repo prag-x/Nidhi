@@ -4,7 +4,8 @@ from typing import Annotated
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
-DEFAULT_SECRET = "dev-only-secret-change-me"
+# Development only. At least 32 bytes, as HS256 (RFC 7518 §3.2) requires; production refuses to start with it.
+DEFAULT_SECRET = "dev-only-secret-change-me-before-any-real-deployment"
 
 
 class Settings(BaseSettings):
@@ -20,6 +21,9 @@ class Settings(BaseSettings):
     bcrypt_rounds: int = 12
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:5173", "http://127.0.0.1:5173"]
     upload_dir: str = "./uploads"
+    # base64 of 32 random bytes; files are encrypted with it at rest (derived from secret_key when empty)
+    file_key: str = ""
+    file_key_file: str = ""   # or a file holding that base64 key (used by the one-container demo image)
     model_dir: str = "./models"
     # Address printed in letters' verification QR codes.
     public_base_url: str = "http://localhost:5173"
@@ -49,6 +53,10 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     settings = Settings()
-    if settings.is_production and settings.secret_key == DEFAULT_SECRET:
+    if settings.is_production and settings.secret_key in (DEFAULT_SECRET, "replace-with-a-long-random-string"):
         raise RuntimeError("NIDHI_SECRET_KEY must be set in production")
+    if len(settings.secret_key.encode()) < 32:
+        raise RuntimeError(
+            "NIDHI_SECRET_KEY is too short: use at least 32 characters, e.g. "
+            "python -c \"import secrets; print(secrets.token_urlsafe(48))\"")
     return settings
