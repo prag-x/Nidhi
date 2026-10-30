@@ -14,7 +14,7 @@ FROM python:3.12-slim
 RUN apt-get update && apt-get install -y --no-install-recommends tesseract-ocr \
     && rm -rf /var/lib/apt/lists/*
 # Letters carry a QR code pointing at this address; set it to the address the service is published at.
-ARG PUBLIC_BASE_URL=https://nidhi-signalnine.onrender.com
+ARG PUBLIC_BASE_URL=https://nidhi-signalnine-hgxy.onrender.com
 ENV NIDHI_PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 \
     NIDHI_DATABASE_URL=sqlite:////app/data/nidhi.db \
