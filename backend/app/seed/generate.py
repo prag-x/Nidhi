@@ -42,7 +42,7 @@ from ..models import (
     User,
 )
 from ..security import hash_password
-from ..services import bankgateway, instruments, release
+from ..services import bankgateway, instruments, release, vault
 from ..services.fdrdoc import draw_specimen, read_fdr
 from . import data as D
 
@@ -248,7 +248,7 @@ def _logit(x: float) -> float:
 def store_document(db: Session, ctx: Ctx, inst: Instrument, pdf: bytes, *, at: datetime, user: User | None,
                    filename: str | None = None, doc_type: str = "FDR_COPY") -> Document:
     stored = f"{uuid.uuid4().hex}.pdf"
-    (ctx.upload_dir / stored).write_bytes(pdf)
+    vault.write(ctx.upload_dir / stored, pdf)
     doc = Document(instrument_id=inst.id, doc_type=doc_type, filename=filename or f"FDR_{re.sub(r'[^A-Za-z0-9]', '', inst.fdr_number)}.pdf",
                    stored_name=stored, content_type="application/pdf", size_bytes=len(pdf),
                    sha256=hashlib.sha256(pdf).hexdigest(), uploaded_by_id=user.id if user else None, uploaded_at=at)
