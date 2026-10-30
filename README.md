@@ -2,6 +2,8 @@
 
 **Smart India Hackathon 2026 · Problem Statement 26265 · All India Council for Technical Education (AICTE) · Team SignalNine (198001)**
 
+**Source:** [github.com/prag-x/Nidhi](https://github.com/prag-x/Nidhi)
+
 *Nidhi* (निधि) means a fund held in trust.
 
 AICTE asks institutions to keep security deposits or Fixed Deposit Receipts (FDRs) pledged to it as part of approval and compliance. Today these are tracked through files, letters to bank branches and spreadsheets. Nidhi is one portal for the whole life of a deposit, from the day an institution lodges it to the day AICTE releases its lien. It serves the Regulation Bureau, the competent authority, Finance & Accounts, the Regional Offices, audit and the institutions themselves. It does four things the paper process cannot:
@@ -105,7 +107,7 @@ All figures from the 600-institution demo dataset (`seed --reset`, seed 2026). T
 | OCR on scanned copies | 45 of the same specimens turned into 200 dpi greyscale images, skewed up to 1.5° and blurred, read by Tesseract | **99.6%** of fields read correctly |
 | Late-renewal model | Gradient-boosted trees; tested on 218 instruments from 97 institutions it never saw | AUC **0.65**; of the top 10% it flags, **81%** were renewed late, against a base rate of 44% |
 | Integrity | Re-computing every seal | 15,091 ledger entries and 1,849 deposit histories in about **1 second** |
-| Tests | `backend/tests` and `e2e` | **65** backend tests (SQLite and PostgreSQL 16) and **17** browser tests |
+| Tests | `backend/tests` and `e2e` | **66** backend tests (SQLite and PostgreSQL 16) and **17** browser tests |
 
 ## Limitations
 
@@ -290,7 +292,7 @@ cd backend
 .\.venv\Scripts\python -m pytest -q
 ```
 
-That runs **65 tests** on a temporary SQLite database (seeded once per run, about 50 seconds). They cover:
+That runs **66 tests** on a temporary SQLite database (seeded once per run, about 50 seconds). They cover:
 
 - the six PS test scenarios end to end through the API (`tests/test_scenarios.py`), including a phone photo read by OCR;
 - access: institutions see only their own deposits; Regional Offices only their region; officers only their own files; nobody approves their own recommendation; live updates never reach another institution;
@@ -345,7 +347,7 @@ nidhi/
 │   │   ├── main.py         FastAPI app; also serves the built web app in production
 │   │   └── cli.py          migrate · seed
 │   ├── alembic/            database migrations
-│   ├── tests/              65 pytest tests
+│   ├── tests/              66 pytest tests
 │   └── Dockerfile          API image for Docker Compose
 ├── frontend/src/
 │   ├── pages/              role desks, deposits, deposit file, lodge/renew, maturity calendar, releases,
