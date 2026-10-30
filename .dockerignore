@@ -1,0 +1,10 @@
+**/node_modules
+**/.venv
+**/__pycache__
+**/*.pyc
+**/dist
+backend/nidhi.db*
+backend/uploads
+backend/models
+.git
+e2e-failure-*.png
