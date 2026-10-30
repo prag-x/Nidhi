@@ -18,6 +18,26 @@ BASE = os.environ.get("NIDHI_E2E_URL", "http://localhost:5173").rstrip("/")
 PASSWORD = "Demo@2026"
 
 
+@pytest.fixture(scope="session", autouse=True)
+def app_is_up():
+    """Fail fast, with the fix, when the API or the web app is not running (otherwise every test times out)."""
+    import json
+    import urllib.request
+
+    try:
+        with urllib.request.urlopen(f"{BASE}/api/health", timeout=10) as r:
+            ok = json.loads(r.read() or b"{}").get("status") == "ok"
+    except Exception as e:  # noqa: BLE001
+        ok, err = False, e
+    else:
+        err = None
+    if not ok:
+        pytest.exit(
+            f"The app is not reachable at {BASE}/api/health ({err or 'unhealthy'}). Start the API "
+            "(cd backend; python -m uvicorn app.main:app --port 8000) and the web app (cd frontend; npm run dev), "
+            "or set NIDHI_E2E_URL.", returncode=2)
+
+
 @pytest.fixture(scope="session")
 def browser():
     with sync_playwright() as pw:

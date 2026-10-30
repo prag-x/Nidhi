@@ -29,7 +29,11 @@ RUN pip install -r requirements.txt
 COPY backend/ ./
 COPY --from=web /web/dist /app/static
 # Load the demonstration dataset at build time (development settings, so no secret key is needed yet).
+# Stored files are encrypted at rest (AES-256-GCM). The demo image makes its own random key at build time, since the
+# demo data is loaded at build time too; a real deployment passes NIDHI_FILE_KEY from its secret store instead.
+ENV NIDHI_FILE_KEY_FILE=/app/data/file.key
 RUN mkdir -p /app/data/uploads /app/data/samples \
+    && python -c "import base64,os; print(base64.b64encode(os.urandom(32)).decode())" > /app/data/file.key \
     && NIDHI_ENVIRONMENT=development python -m app.cli migrate \
     && NIDHI_ENVIRONMENT=development python -m app.cli seed --if-empty --samples /app/data/samples
 ENV NIDHI_ENVIRONMENT=production
