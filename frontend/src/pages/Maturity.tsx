@@ -38,10 +38,10 @@ export default function Maturity() {
       <Card className="mb-5 p-4">
         <MaturityChart data={s.calendar} onSelect={(m) => { setMonth(m); setPage(1) }} />
       </Card>
-      <p className="mb-2 text-[13px] text-slate-500">{t('Darker months have more FDRs maturing; the violet line under each shows how many already have a renewal lodged.')}</p>
+      <p className="mb-2 text-[13px] text-slate-500">{t('Darker months have more FDRs maturing; the grey-green bar under each shows the share already renewed.')}</p>
       <div className="mb-5 grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-7">
         <button onClick={() => { setMonth('overdue'); setPage(1) }}
-          className={clsx('rounded-[8px] border px-3 py-2 text-left transition-shadow hover:shadow-md', month === 'overdue' ? 'border-seal-600 bg-seal-600 text-white [&_span]:!text-white' : 'border-seal-100 bg-seal-50')}>
+          className={clsx('rounded-[8px] border px-3 py-2 text-left transition-shadow hover:shadow-md', month === 'overdue' ? 'border-seal-600 bg-seal-600 text-white [&_span]:!text-white' : 'border-seal-100 bg-white')}>
           <span className="block text-[12.5px] text-seal-700">{t('Matured')}</span>
           <span className="figure block text-[22px] leading-tight text-seal-600">{fmtNumber(s.kpis.matured_unrenewed)}</span>
           <span className="block text-[12px] text-slate-500">{fmtLakh(s.kpis.matured_amount)}</span>
@@ -52,9 +52,9 @@ export default function Maturity() {
           const heat = m.count / max
           return (
             <button key={m.month} onClick={() => { setMonth(m.month); setPage(1) }}
-              style={{ background: month === m.month ? undefined : `rgba(31,138,128,${0.06 + heat * 0.32})` }}
+              style={{ background: month === m.month ? undefined : `rgba(31,95,90,${0.04 + heat * 0.2})` }}
               className={clsx('relative overflow-hidden rounded-[8px] border px-3 py-2 text-left transition-shadow hover:shadow-md', month === m.month ? 'border-brand-800 bg-brand-800 text-white [&_span]:!text-white' : 'border-transparent')}>
-              {m.renewal_lodged > 0 && <span className="absolute inset-x-0 bottom-0 h-1 bg-ink-green-500" style={{ width: `${(100 * m.renewal_lodged) / Math.max(1, m.count)}%` }} />}
+              {m.renewal_lodged > 0 && <span className="absolute inset-x-0 bottom-0 h-1 bg-[#a9c4c0]" style={{ width: `${(100 * m.renewal_lodged) / Math.max(1, m.count)}%` }} />}
               <span className="block text-[12.5px] text-slate-500">{new Date(m.month + 'T00:00:00').toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}</span>
               <span className="figure block text-[22px] leading-tight text-brand-900">{fmtNumber(m.count)}</span>
               <span className="block text-[12px] text-slate-500">

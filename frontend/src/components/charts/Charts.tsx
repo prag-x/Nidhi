@@ -56,10 +56,11 @@ export function Legend({ items }: { items: { label: string; color: string }[] })
 const MONTH = (iso: string) => new Date(iso + (iso.length === 7 ? '-01' : '') + 'T00:00:00').toLocaleDateString('en-IN', { month: 'short', year: '2-digit' })
 
 export const MATURITY_SERIES = [
-  { key: 'lodged', label: 'Renewal already lodged', color: '#6a4fa8', to: '#a48fd6' },
-  { key: 'rest', label: 'Not yet lodged', color: '#1f8a80', to: '#5ec4b8' },
-  { key: 'risk', label: 'Not lodged, likely late', color: '#c0362c', to: '#f0776b' },
+  { key: 'lodged', label: 'Renewal already lodged', color: '#a9c4c0' },
+  { key: 'rest', label: 'Not yet lodged', color: '#1f5f5a' },
+  { key: 'risk', label: 'Not lodged, likely late', color: '#a63d33' },
 ] as const
+const AMOUNT_LINE = '#5b6775'
 
 export function MaturityChart({
   data,
@@ -77,26 +78,18 @@ export function MaturityChart({
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Legend items={[...MATURITY_SERIES.map((s) => ({ label: s.label, color: s.color })), { label: 'Amount maturing (₹ lakh)', color: '#c98a0c' }]} />
+        <Legend items={[...MATURITY_SERIES.map((s) => ({ label: s.label, color: s.color })), { label: 'Amount maturing, ₹ lakh (right scale)', color: AMOUNT_LINE }]} />
         {total > 0 && <span className="text-[12.5px] text-slate-500">{fmtNumber(total)} in 12 months · busiest {peak.label}</span>}
       </div>
       <div className="mt-3 h-64">
         <ResponsiveContainer>
-          <ComposedChart data={rows} margin={{ top: 20, right: 4, left: -16, bottom: 0 }} barCategoryGap="22%">
-            <defs>
-              {MATURITY_SERIES.map((s) => (
-                <linearGradient key={s.key} id={`mat-${s.key}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={s.to} />
-                  <stop offset="100%" stopColor={s.color} />
-                </linearGradient>
-              ))}
-            </defs>
-            <CartesianGrid stroke={GRID} vertical={false} strokeDasharray="3 4" />
+          <ComposedChart data={rows} margin={{ top: 20, right: 4, left: -16, bottom: 0 }} barCategoryGap="28%">
+            <CartesianGrid stroke={GRID} vertical={false} />
             <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={{ stroke: '#d8dfdd' }} />
             <YAxis yAxisId="n" tick={AXIS} tickLine={false} axisLine={false} allowDecimals={false} />
-            <YAxis yAxisId="amt" orientation="right" tick={{ ...AXIS, fill: '#a87008' }} tickLine={false} axisLine={false} width={44} />
+            <YAxis yAxisId="amt" orientation="right" tick={AXIS} tickLine={false} axisLine={false} width={44} />
             <Tooltip
-              cursor={{ fill: 'rgba(31,138,128,0.08)' }}
+              cursor={{ fill: 'rgba(18,63,60,0.05)' }}
               content={({ active, payload }) => {
                 if (!active || !payload?.length) return null
                 const r = payload[0].payload as (typeof rows)[number]
@@ -109,13 +102,14 @@ export function MaturityChart({
               }}
             />
             {MATURITY_SERIES.map((s, i) => (
-              <Bar key={s.key} yAxisId="n" dataKey={s.key} stackId="m" fill={`url(#mat-${s.key})`} maxBarSize={46}
-                radius={i === MATURITY_SERIES.length - 1 ? [6, 6, 0, 0] : 0}
+              <Bar key={s.key} yAxisId="n" dataKey={s.key} stackId="m" fill={s.color} maxBarSize={40}
+                radius={i === MATURITY_SERIES.length - 1 ? [2, 2, 0, 0] : 0}
                 onClick={(d) => onSelect?.((d.payload as { month: string }).month)} className={onSelect ? 'cursor-pointer' : undefined}>
-                {i === MATURITY_SERIES.length - 1 && <LabelList dataKey="count" position="top" style={{ fontSize: 12, fill: '#123f3c', fontWeight: 700 }} />}
+                {i === MATURITY_SERIES.length - 1 && <LabelList dataKey="count" position="top" style={{ fontSize: 11.5, fill: '#374240', fontWeight: 600 }} />}
               </Bar>
             ))}
-            <Line yAxisId="amt" type="monotone" dataKey="lakh" stroke="#c98a0c" strokeWidth={2.5} dot={{ r: 3.5, fill: '#fff', stroke: '#c98a0c', strokeWidth: 2 }} activeDot={{ r: 5 }} />
+            <Line yAxisId="amt" type="linear" dataKey="lakh" stroke={AMOUNT_LINE} strokeWidth={1.5} strokeDasharray="4 3"
+              dot={{ r: 2.5, fill: AMOUNT_LINE, strokeWidth: 0 }} activeDot={{ r: 4 }} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -127,10 +121,10 @@ export function MaturityChart({
 
 export function FlowChart({ data }: { data: { month: string; lodged: number; accepted: number; released: number; renewed_late: number }[] }) {
   const series = [
-    { key: 'lodged', label: 'Lodged', color: '#1f8a80' },
-    { key: 'accepted', label: 'Accepted', color: '#6a4fa8' },
-    { key: 'renewed_late', label: 'Renewed late', color: '#c0362c' },
-    { key: 'released', label: 'Released', color: '#c98a0c' },
+    { key: 'lodged', label: 'Lodged', color: '#1f5f5a' },
+    { key: 'accepted', label: 'Accepted', color: '#7aa39d' },
+    { key: 'renewed_late', label: 'Renewed late', color: '#a63d33' },
+    { key: 'released', label: 'Released', color: '#5b6775' },
   ] as const
   const rows = data.map((d) => ({ ...d, label: MONTH(d.month) }))
   return (
