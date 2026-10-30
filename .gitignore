@@ -22,3 +22,9 @@ e2e-failure-*.png
 
 # Demo-video working files (kept local)
 brag-output/
+
+# Demo-video backups and accidental root uploads
+brag-backup/
+/uploads/
+*.db-shm
+*.db-wal
