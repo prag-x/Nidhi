@@ -46,3 +46,30 @@ def test_every_action_is_in_the_audit_trail(api):
     api.act("rb.head", x["id"], "observation", remarks="Called the branch to confirm the lien.")
     actions = [r["action"] for r in api.get("auditor", "/admin/audit?page_size=50").json()["items"]]
     assert "instrument_submitted" in actions and "instrument_observation" in actions
+
+
+def test_documents_and_letters_are_encrypted_at_rest(api):
+    from pathlib import Path
+
+    from app.config import get_settings
+    from app.models import Document, Letter
+
+    b = api.body()
+    x = api.lodge(body=b)
+    doc = api.db.get(Document, x["documents"][0]["id"])
+    on_disk = (Path(get_settings().upload_dir) / doc.stored_name).read_bytes()
+    assert on_disk.startswith(b"NDV1") and b"%PDF" not in on_disk[:64]
+    got = api.client.get(f"/api/documents/{doc.id}", headers=api.h("rb.head")).content
+    assert got.startswith(b"%PDF")
+    import hashlib
+
+    assert hashlib.sha256(got).hexdigest() == doc.sha256
+    letter = api.db.query(Letter).filter(Letter.instrument_id == x["id"]).first()
+    raw = (Path(get_settings().upload_dir) / "letters" / letter.stored_name).read_bytes()
+    assert raw.startswith(b"NDV1")
+    # A file altered on disk is refused, not served.
+    p = Path(get_settings().upload_dir) / doc.stored_name
+    p.write_bytes(on_disk[:-1] + bytes([on_disk[-1] ^ 1]))
+    r = api.client.get(f"/api/documents/{doc.id}", headers=api.h("rb.head"))
+    assert r.status_code == 409
+    p.write_bytes(on_disk)
