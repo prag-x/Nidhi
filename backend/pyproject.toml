@@ -1,0 +1,21 @@
+[project]
+name = "nidhi-backend"
+version = "1.0.0"
+description = "Nidhi: AICTE Security Deposit / FDR Management Portal"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 130
+target-version = "py311"
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+ignore = ["B008", "SIM108", "E731", "UP042", "B905", "SIM105"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff.lint.per-file-ignores]
+"app/seed/*" = ["E501"]
