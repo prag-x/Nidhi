@@ -2,6 +2,8 @@
 
 **Smart India Hackathon 2026 · Problem Statement 26265 · All India Council for Technical Education (AICTE) · Team SignalNine (198001)**
 
+**Live demo:** [nidhi-signalnine-hgxy.onrender.com](https://nidhi-signalnine-hgxy.onrender.com) · **Video:** [youtu.be/PU3KRvM0vZE](https://youtu.be/PU3KRvM0vZE) · **Source:** [github.com/prag-x/Nidhi](https://github.com/prag-x/Nidhi)
+
 *Nidhi* (निधि) means a fund held in trust.
 
 AICTE asks institutions to keep security deposits or Fixed Deposit Receipts (FDRs) pledged to it as part of approval and compliance. Today these are tracked through files, letters to bank branches and spreadsheets. Nidhi is one portal for the whole life of a deposit, from the day an institution lodges it to the day AICTE releases its lien. It serves the Regulation Bureau, the competent authority, Finance & Accounts, the Regional Offices, audit and the institutions themselves. It does four things the paper process cannot:
