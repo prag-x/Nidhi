@@ -1,0 +1,24 @@
+# Python
+backend/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+backend/*.db
+backend/*.db-*
+backend/uploads/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Local config
+.env
+.DS_Store
+backend/models/
+*.pkl
+.claude/launch.json
+e2e-failure-*.png
+
+# Demo-video working files (kept local)
+brag-output/
